@@ -54,8 +54,9 @@ class FortuneScreen extends ConsumerWidget {
                   Text(
                     '${today.year}\u5e74${today.month}\u6708${today.day}\u65e5',
                     style: const TextStyle(
-                      color: Colors.white70,
-                      fontSize: 14,
+                      color: Colors.white,
+                      fontSize: 18,
+                      fontWeight: FontWeight.w500,
                     ),
                   ),
                 ],
@@ -66,7 +67,10 @@ class FortuneScreen extends ConsumerWidget {
               child: Column(
                 children: [
                   // Daily message
-                  DailyMessageCard(message: message.message),
+                  DailyMessageCard(
+                    message: message.message,
+                    author: message.author,
+                  ),
                   const SizedBox(height: 16),
                   // Fortune card
                   FortuneCard(

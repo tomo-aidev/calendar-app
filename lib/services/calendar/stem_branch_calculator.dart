@@ -5,8 +5,8 @@
 class StemBranchCalculator {
   StemBranchCalculator._();
 
-  // Reference: 1970-01-01 is 庚戌 (Kanoe-Inu), position 46 in 0-indexed cycle
-  static const int _epochOffset = 46;
+  // Reference: 1970-01-01 is 辛巳 (Kanoto-Mi), position 17 in 0-indexed cycle
+  static const int _epochOffset = 17;
   static final DateTime _epoch = DateTime(1970, 1, 1);
 
   // 天干 (Heavenly Stems)

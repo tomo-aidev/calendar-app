@@ -34,7 +34,7 @@ class DayCell extends StatelessWidget {
           ),
           borderRadius: BorderRadius.circular(4),
         ),
-        padding: const EdgeInsets.all(2),
+        padding: const EdgeInsets.all(3),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -45,7 +45,7 @@ class DayCell extends StatelessWidget {
                 Text(
                   '${day.date.day}',
                   style: TextStyle(
-                    fontSize: 14,
+                    fontSize: 16,
                     fontWeight: FontWeight.bold,
                     color: isSunday
                         ? AppColors.sunday
@@ -58,7 +58,10 @@ class DayCell extends StatelessWidget {
                   Text(
                     day.rokuyo.shortName,
                     style: TextStyle(
-                      fontSize: 7,
+                      fontSize: 9,
+                      fontWeight: day.rokuyo.isAuspicious
+                          ? FontWeight.bold
+                          : FontWeight.normal,
                       color: day.rokuyo.isAuspicious
                           ? AppColors.taian
                           : day.rokuyo.isInauspicious
@@ -103,7 +106,7 @@ class DayCell extends StatelessWidget {
                           child: Text(
                             '🎂${a.personName}',
                             style: TextStyle(
-                              fontSize: 7,
+                              fontSize: 8,
                               color: AppColors.red.withValues(alpha: 0.8),
                               height: 1.1,
                             ),
@@ -115,7 +118,7 @@ class DayCell extends StatelessWidget {
                       Text(
                         '+${day.anniversaries.length - 1}記念日',
                         style: TextStyle(
-                          fontSize: 6,
+                          fontSize: 7,
                           color: AppColors.red.withValues(alpha: 0.6),
                         ),
                       ),
@@ -141,7 +144,7 @@ class DayCell extends StatelessWidget {
                               child: Text(
                                 event.title,
                                 style: const TextStyle(
-                                  fontSize: 7,
+                                  fontSize: 8,
                                   color: AppColors.warmBrown,
                                   height: 1.1,
                                 ),
@@ -155,7 +158,7 @@ class DayCell extends StatelessWidget {
                       Text(
                         '+${day.events.length - (day.hasAnniversaries ? 1 : 2)}',
                         style: TextStyle(
-                          fontSize: 7,
+                          fontSize: 8,
                           color: AppColors.gold.withValues(alpha: 0.8),
                           fontWeight: FontWeight.bold,
                         ),

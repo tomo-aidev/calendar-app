@@ -3,8 +3,9 @@ import '../../../config/colors.dart';
 
 class DailyMessageCard extends StatelessWidget {
   final String message;
+  final String? author;
 
-  const DailyMessageCard({super.key, required this.message});
+  const DailyMessageCard({super.key, required this.message, this.author});
 
   @override
   Widget build(BuildContext context) {
@@ -38,7 +39,7 @@ class DailyMessageCard extends StatelessWidget {
                 ),
                 SizedBox(width: 8),
                 Text(
-                  '\u4eca\u65e5\u306e\u30e1\u30c3\u30bb\u30fc\u30b8',
+                  '今日の名言',
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
@@ -57,6 +58,18 @@ class DailyMessageCard extends StatelessWidget {
               ),
               textAlign: TextAlign.center,
             ),
+            if (author != null) ...[
+              const SizedBox(height: 8),
+              Text(
+                '― $author',
+                style: TextStyle(
+                  fontSize: 13,
+                  color: Colors.grey[600],
+                  fontWeight: FontWeight.w500,
+                ),
+                textAlign: TextAlign.right,
+              ),
+            ],
           ],
         ),
       ),

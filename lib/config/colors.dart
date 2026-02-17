@@ -37,18 +37,18 @@ class AppColors {
   // Gender pastel colors
   static const Color femaleBg = Color(0xFFFCE4EC);
   static const Color femaleSelected = Color(0xFFF48FB1);
-  static const Color maleBg = Color(0xFFE3F2FD);
-  static const Color maleSelected = Color(0xFF90CAF9);
+  static const Color maleBg = Color(0xFFBBDEFB);
+  static const Color maleSelected = Color(0xFF42A5F5);
   static const Color otherBg = Color(0xFFF5F5F5);
   static const Color otherSelected = Color(0xFFE0E0E0);
 
   // Blood type pastel colors
-  static const Color bloodABg = Color(0xFFE3F2FD);
-  static const Color bloodASelected = Color(0xFF90CAF9);
+  static const Color bloodABg = Color(0xFFBBDEFB);
+  static const Color bloodASelected = Color(0xFF42A5F5);
   static const Color bloodBBg = Color(0xFFFCE4EC);
   static const Color bloodBSelected = Color(0xFFF48FB1);
-  static const Color bloodOBg = Color(0xFFE8F5E9);
-  static const Color bloodOSelected = Color(0xFFA5D6A7);
+  static const Color bloodOBg = Color(0xFFC8E6C9);
+  static const Color bloodOSelected = Color(0xFF66BB6A);
   static const Color bloodABBg = Color(0xFFF3E5F5);
   static const Color bloodABSelected = Color(0xFFCE93D8);
 

@@ -30,7 +30,7 @@ class LuckyDayTag extends StatelessWidget {
           type.displayName,
           style: TextStyle(
             color: type.textColor,
-            fontSize: compact ? 6 : 10,
+            fontSize: compact ? 7 : 10,
             fontWeight: FontWeight.bold,
           ),
         ),

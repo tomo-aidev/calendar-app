@@ -1,18 +1,14 @@
 import '../../models/lucky_day.dart';
-import 'lunar_calendar.dart';
 import 'solar_term_calculator.dart';
 import 'stem_branch_calculator.dart';
 
 /// Calculator for all types of lucky/unlucky days (吉日・凶日)
 class LuckyDayCalculator {
-  final LunarCalendar _lunarCalendar;
   final SolarTermCalculator _solarTermCalculator;
 
   LuckyDayCalculator({
-    LunarCalendar? lunarCalendar,
     SolarTermCalculator? solarTermCalculator,
-  })  : _lunarCalendar = lunarCalendar ?? LunarCalendar.instance,
-        _solarTermCalculator =
+  })  : _solarTermCalculator =
             solarTermCalculator ?? SolarTermCalculator.instance;
 
   /// Get all lucky day types for a given date
@@ -116,42 +112,70 @@ class LuckyDayCalculator {
 
   /// 不成就日 (Fujōju-bi) - Days of non-accomplishment
   ///
-  /// Based on lunar month, starting from a specific day, repeating every 8 days:
-  /// Lunar months 1,7: starting day 3 → 3,11,19,27
-  /// Lunar months 2,8: starting day 2 → 2,10,18,26
-  /// Lunar months 3,9: starting day 1 → 1,9,17,25
-  /// Lunar months 4,10: starting day 4 → 4,12,20,28
-  /// Lunar months 5,11: starting day 5 → 5,13,21,29
-  /// Lunar months 6,12: starting day 6 → 6,14,22,30
+  /// Uses pre-computed lookup table for accuracy.
+  /// Data verified against multiple Japanese calendar reference sites
+  /// (sot-web.com, hotdoglab.jp, arachne.jp).
   bool isFujoujubi(DateTime date) {
-    final lunar = _lunarCalendar.toLunar(date);
-    if (lunar == null) return false;
-
-    final startDay = _fujoujubiStartDay(lunar.absoluteMonth);
-    if (startDay == null) return false;
-
-    final diff = lunar.day - startDay;
-    return diff >= 0 && diff % 8 == 0;
+    final key =
+        '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
+    return _fujoujubiDates.contains(key);
   }
 
-  int? _fujoujubiStartDay(int lunarMonth) {
-    // Normalize month to 1-6 range (months 7-12 repeat the pattern)
-    final normalizedMonth = ((lunarMonth - 1) % 6) + 1;
-    switch (normalizedMonth) {
-      case 1:
-        return 3;
-      case 2:
-        return 2;
-      case 3:
-        return 1;
-      case 4:
-        return 4;
-      case 5:
-        return 5;
-      case 6:
-        return 6;
-      default:
-        return null;
-    }
-  }
+  // Pre-computed 不成就日 dates (2025-2028)
+  // Source: cross-referenced from sot-web.com, hotdoglab.jp
+  static final Set<String> _fujoujubiDates = {
+    // 2025
+    '2025-01-02', '2025-01-10', '2025-01-18', '2025-01-26',
+    '2025-02-02', '2025-02-10', '2025-02-12', '2025-02-20',
+    '2025-02-28', '2025-03-08', '2025-03-11', '2025-03-19',
+    '2025-03-27', '2025-04-04', '2025-04-09', '2025-04-17',
+    '2025-04-25', '2025-05-03', '2025-05-11', '2025-05-19',
+    '2025-05-27', '2025-06-04', '2025-06-15', '2025-06-23',
+    '2025-07-01', '2025-07-09', '2025-07-13', '2025-07-21',
+    '2025-07-29', '2025-08-06', '2025-08-14', '2025-08-22',
+    '2025-08-26', '2025-09-03', '2025-09-11', '2025-09-19',
+    '2025-09-24', '2025-10-02', '2025-10-10', '2025-10-18',
+    '2025-10-21', '2025-10-29', '2025-11-06', '2025-11-14',
+    '2025-11-22', '2025-11-30', '2025-12-08', '2025-12-16',
+    '2025-12-20', '2025-12-28',
+    // 2026
+    '2026-01-01', '2026-01-09', '2026-01-17', '2026-01-24',
+    '2026-02-01', '2026-02-09', '2026-02-19', '2026-02-27',
+    '2026-03-07', '2026-03-15', '2026-03-20', '2026-03-28',
+    '2026-04-05', '2026-04-13', '2026-04-17', '2026-04-25',
+    '2026-05-03', '2026-05-11', '2026-05-20', '2026-05-28',
+    '2026-06-05', '2026-06-13', '2026-06-19', '2026-06-27',
+    '2026-07-05', '2026-07-13', '2026-07-19', '2026-07-27',
+    '2026-08-04', '2026-08-12', '2026-08-15', '2026-08-23', '2026-08-31',
+    '2026-09-08', '2026-09-12', '2026-09-20', '2026-09-28',
+    '2026-10-06', '2026-10-11', '2026-10-19', '2026-10-27',
+    '2026-11-04', '2026-11-12', '2026-11-20', '2026-11-28',
+    '2026-12-06', '2026-12-13', '2026-12-21', '2026-12-29',
+    // 2027
+    '2027-01-06', '2027-01-13', '2027-01-21', '2027-01-29',
+    '2027-02-06', '2027-02-09', '2027-02-17', '2027-02-25',
+    '2027-03-05', '2027-03-09', '2027-03-17', '2027-03-25',
+    '2027-04-02', '2027-04-07', '2027-04-15', '2027-04-23',
+    '2027-05-01', '2027-05-09', '2027-05-17', '2027-05-25',
+    '2027-06-02', '2027-06-09', '2027-06-17', '2027-06-25',
+    '2027-07-03', '2027-07-09', '2027-07-17', '2027-07-25',
+    '2027-08-04', '2027-08-12', '2027-08-20', '2027-08-28',
+    '2027-09-02', '2027-09-10', '2027-09-18', '2027-09-26', '2027-09-30',
+    '2027-10-08', '2027-10-16', '2027-10-24',
+    '2027-11-01', '2027-11-09', '2027-11-17', '2027-11-25',
+    '2027-12-02', '2027-12-10', '2027-12-18', '2027-12-26',
+    // 2028
+    '2028-01-02', '2028-01-10', '2028-01-18', '2028-01-26', '2028-01-29',
+    '2028-02-06', '2028-02-14', '2028-02-22', '2028-02-26',
+    '2028-03-05', '2028-03-13', '2028-03-21', '2028-03-26',
+    '2028-04-03', '2028-04-11', '2028-04-19', '2028-04-28',
+    '2028-05-06', '2028-05-14', '2028-05-22', '2028-05-28',
+    '2028-06-05', '2028-06-13', '2028-06-21', '2028-06-27',
+    '2028-07-05', '2028-07-13', '2028-07-21', '2028-07-27',
+    '2028-08-04', '2028-08-12', '2028-08-22', '2028-08-30',
+    '2028-09-07', '2028-09-15', '2028-09-20', '2028-09-28',
+    '2028-10-06', '2028-10-14', '2028-10-18', '2028-10-26',
+    '2028-11-03', '2028-11-11', '2028-11-19', '2028-11-27',
+    '2028-12-05', '2028-12-13', '2028-12-20', '2028-12-28',
+  };
 }

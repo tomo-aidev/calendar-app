@@ -91,24 +91,12 @@ class SolarTermCalculator {
 
   /// Get the "sectional month" (節月) for calculating 一粒万倍日
   /// Based on the 12 "major" solar terms that start each month
+  ///
+  /// Sectional months follow this chronological order within a year:
+  /// 小寒(12月) → 立春(1月) → 啓蟄(2月) → ... → 大雪(11月)
+  /// Note: Month 12 starts at 小寒 (early Jan) and ends before 立春 (early Feb)
   int getSectionalMonth(DateTime date) {
     _ensureInitialized();
-
-    // The 12 solar terms that mark month boundaries (節気)
-    const monthTerms = [
-      '立春', // 1月 start
-      '啓蟄', // 2月 start
-      '清明', // 3月 start
-      '立夏', // 4月 start
-      '芒種', // 5月 start
-      '小暑', // 6月 start
-      '立秋', // 7月 start
-      '白露', // 8月 start
-      '寒露', // 9月 start
-      '立冬', // 10月 start
-      '大雪', // 11月 start
-      '小寒', // 12月 start
-    ];
 
     final year = date.year;
     final terms = _solarTerms?[year];
@@ -116,35 +104,43 @@ class SolarTermCalculator {
 
     if (terms == null) return _approximateSectionalMonth(date);
 
-    // Check from month 12 backward to find which sectional month the date falls in
-    // Month 12 starts at 小寒 of the current year
-    final shoukanDate = terms['小寒'];
-    if (shoukanDate != null && !date.isBefore(shoukanDate)) {
-      return 12;
+    // Build chronological list of (term date, month number) for the year
+    // Order: 小寒(12) < 立春(1) < 啓蟄(2) < ... < 大雪(11)
+    final boundaries = <({DateTime date, int month})>[];
+
+    // 小寒 of current year marks month 12 (in early January)
+    final shoukan = terms['小寒'];
+    if (shoukan != null) boundaries.add((date: shoukan, month: 12));
+
+    // Months 1-11: 立春 through 大雪
+    const termToMonth = {
+      '立春': 1, '啓蟄': 2, '清明': 3, '立夏': 4, '芒種': 5,
+      '小暑': 6, '立秋': 7, '白露': 8, '寒露': 9, '立冬': 10,
+      '大雪': 11,
+    };
+
+    for (final entry in termToMonth.entries) {
+      final termDate = terms[entry.key];
+      if (termDate != null) boundaries.add((date: termDate, month: entry.value));
     }
 
-    // Month 11 starts at 大雪
-    final taisetsuDate = terms['大雪'];
-    if (taisetsuDate != null && !date.isBefore(taisetsuDate)) {
-      return 11;
-    }
+    // Sort by date ascending
+    boundaries.sort((a, b) => a.date.compareTo(b.date));
 
-    // Months 10 down to 1
-    for (int m = 9; m >= 0; m--) {
-      final termDate = terms[monthTerms[m]];
-      if (termDate != null && !date.isBefore(termDate)) {
-        return m + 1;
+    // Find which interval the date falls in (reverse search)
+    for (int i = boundaries.length - 1; i >= 0; i--) {
+      if (!date.isBefore(boundaries[i].date)) {
+        return boundaries[i].month;
       }
     }
 
-    // Before 立春: check previous year's 小寒 (month 12 of prev year)
-    final prevShoukanDate = prevTerms?['小寒'];
-    if (prevShoukanDate != null && !date.isBefore(prevShoukanDate)) {
-      return 12;
+    // Before 小寒 of current year: check previous year's 大雪 and 小寒
+    final prevTaisetsu = prevTerms?['大雪'];
+    if (prevTaisetsu != null && !date.isBefore(prevTaisetsu)) {
+      return 11;
     }
-
-    // Before previous year's 小寒: must be month 11 of prev year
-    return 11;
+    // Must be in month 12 of previous year (after prev year's 小寒)
+    return 12;
   }
 
   Season _approximateSeason(DateTime date) {

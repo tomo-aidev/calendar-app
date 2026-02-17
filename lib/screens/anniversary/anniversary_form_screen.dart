@@ -455,7 +455,6 @@ class _AnniversaryFormScreenState
         ),
       ),
     );
-    controller.dispose();
     if (result != null) {
       setState(() => _personName = result);
     }
@@ -550,7 +549,6 @@ class _AnniversaryFormScreenState
         ),
       ),
     );
-    controller.dispose();
     if (result != null) {
       setState(() => _memo = result);
     }

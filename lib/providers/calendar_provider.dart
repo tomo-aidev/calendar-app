@@ -41,7 +41,16 @@ final monthCalendarProvider =
 
   for (int day = 1; day <= daysInMonth; day++) {
     final date = DateTime(month.year, month.month, day);
-    final events = scheduleNotifier.getEventsForDate(date);
+    final events = scheduleNotifier.getEventsForDate(date)
+      ..sort((a, b) {
+        // All-day events first, then by start time
+        if (a.isAllDay && !b.isAllDay) return -1;
+        if (!a.isAllDay && b.isAllDay) return 1;
+        if (a.startTime != null && b.startTime != null) {
+          return a.startTime!.compareTo(b.startTime!);
+        }
+        return 0;
+      });
     final anniversaries = anniversaryNotifier.getAnniversariesForDate(date);
     days.add(CalendarDay(
       date: date,

@@ -53,31 +53,41 @@ class FortuneCard extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 16),
-            // Luck ratings with individual colors
+            // Luck ratings with individual icons
             _LuckRow(
               label: '総合運',
               stars: fortune.overallLuck,
               color: AppColors.fortuneOverall,
+              filledIcon: Icons.star,
+              emptyIcon: Icons.star_border,
             ),
             _LuckRow(
               label: '恋愛運',
               stars: fortune.loveLuck,
               color: AppColors.fortuneLove,
+              filledIcon: Icons.favorite,
+              emptyIcon: Icons.favorite_border,
             ),
             _LuckRow(
               label: '仕事運',
               stars: fortune.workLuck,
               color: AppColors.fortuneWork,
+              filledIcon: Icons.workspace_premium,
+              emptyIcon: Icons.workspace_premium_outlined,
             ),
             _LuckRow(
               label: '金運　',
               stars: fortune.moneyLuck,
               color: AppColors.fortuneMoney,
+              filledIcon: Icons.monetization_on,
+              emptyIcon: Icons.monetization_on_outlined,
             ),
             _LuckRow(
               label: '健康運',
               stars: fortune.healthLuck,
               color: AppColors.fortuneHealth,
+              filledIcon: Icons.spa,
+              emptyIcon: Icons.spa_outlined,
             ),
             const SizedBox(height: 16),
             // Advice
@@ -133,11 +143,14 @@ class _LuckRow extends StatelessWidget {
   final String label;
   final int stars;
   final Color color;
-
+  final IconData filledIcon;
+  final IconData emptyIcon;
   const _LuckRow({
     required this.label,
     required this.stars,
     required this.color,
+    this.filledIcon = Icons.circle,
+    this.emptyIcon = Icons.circle_outlined,
   });
 
   @override
@@ -156,11 +169,15 @@ class _LuckRow extends StatelessWidget {
           const SizedBox(width: 8),
           Row(
             children: List.generate(5, (i) {
-              return Icon(
-                i < stars ? Icons.star : Icons.star_border,
-                color: color,
-                size: 22,
-              );
+              if (i < stars) {
+                return Icon(filledIcon, color: color, size: 22);
+              } else {
+                return Icon(
+                  emptyIcon,
+                  color: color.withValues(alpha: 0.3),
+                  size: 22,
+                );
+              }
             }),
           ),
         ],

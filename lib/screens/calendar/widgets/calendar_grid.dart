@@ -37,7 +37,7 @@ class CalendarGrid extends ConsumerWidget {
                     label,
                     textAlign: TextAlign.center,
                     style: TextStyle(
-                      fontSize: 12,
+                      fontSize: 13,
                       fontWeight: FontWeight.bold,
                       color: index == 0
                           ? AppColors.sunday
@@ -54,10 +54,10 @@ class CalendarGrid extends ConsumerWidget {
         // Calendar grid
         Expanded(
           child: GridView.builder(
-            padding: const EdgeInsets.all(4),
+            padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 0),
             gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount: 7,
-              childAspectRatio: 0.75,
+              childAspectRatio: 0.65,
               crossAxisSpacing: 2,
               mainAxisSpacing: 2,
             ),
