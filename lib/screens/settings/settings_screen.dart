@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -8,6 +9,8 @@ import '../../providers/calendar_provider.dart';
 import '../../providers/profile_provider.dart';
 import '../../services/notification_service.dart';
 import '../../services/storage_service.dart';
+import 'privacy_policy_screen.dart';
+import 'terms_screen.dart';
 import 'widgets/profile_form.dart';
 
 class SettingsScreen extends ConsumerStatefulWidget {
@@ -58,25 +61,74 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   }
 
   Future<void> _pickNotificationTime() async {
-    final time = await showTimePicker(
-      context: context,
-      initialTime: TimeOfDay(hour: _notificationHour, minute: _notificationMinute),
-    );
-    if (time != null) {
-      setState(() {
-        _notificationHour = time.hour;
-        _notificationMinute = time.minute;
-      });
-      await StorageService.instance.saveSetting('notificationHour', time.hour);
-      await StorageService.instance.saveSetting('notificationMinute', time.minute);
+    int selectedHour = _notificationHour;
+    int selectedMinute = _notificationMinute;
 
-      if (_dailyNotificationEnabled) {
-        await NotificationService.instance.scheduleDailyMessage(
-          hour: time.hour,
-          minute: time.minute,
-        );
-      }
-    }
+    await showCupertinoModalPopup<void>(
+      context: context,
+      builder: (context) => Container(
+        height: 280,
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+        ),
+        child: Column(
+          children: [
+            // Header with Done button
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              height: 44,
+              decoration: BoxDecoration(
+                color: Colors.grey[100],
+                borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  CupertinoButton(
+                    padding: EdgeInsets.zero,
+                    child: const Text('キャンセル'),
+                    onPressed: () => Navigator.pop(context),
+                  ),
+                  CupertinoButton(
+                    padding: EdgeInsets.zero,
+                    child: const Text('完了', style: TextStyle(fontWeight: FontWeight.bold)),
+                    onPressed: () async {
+                      setState(() {
+                        _notificationHour = selectedHour;
+                        _notificationMinute = selectedMinute;
+                      });
+                      await StorageService.instance.saveSetting('notificationHour', selectedHour);
+                      await StorageService.instance.saveSetting('notificationMinute', selectedMinute);
+
+                      if (_dailyNotificationEnabled) {
+                        await NotificationService.instance.scheduleDailyMessage(
+                          hour: selectedHour,
+                          minute: selectedMinute,
+                        );
+                      }
+                      if (context.mounted) Navigator.pop(context);
+                    },
+                  ),
+                ],
+              ),
+            ),
+            // Time picker
+            Expanded(
+              child: CupertinoDatePicker(
+                mode: CupertinoDatePickerMode.time,
+                use24hFormat: true,
+                initialDateTime: DateTime(2026, 1, 1, _notificationHour, _notificationMinute),
+                onDateTimeChanged: (DateTime dateTime) {
+                  selectedHour = dateTime.hour;
+                  selectedMinute = dateTime.minute;
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   @override
@@ -224,15 +276,23 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             ListTile(
               leading: const Icon(Icons.description, color: AppColors.gold),
               title: const Text('利用規約'),
+              trailing: const Icon(Icons.chevron_right),
               onTap: () {
-                // Open terms of service
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const TermsScreen()),
+                );
               },
             ),
             ListTile(
               leading: const Icon(Icons.privacy_tip, color: AppColors.gold),
               title: const Text('プライバシーポリシー'),
+              trailing: const Icon(Icons.chevron_right),
               onTap: () {
-                // Open privacy policy
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const PrivacyPolicyScreen()),
+                );
               },
             ),
             const SizedBox(height: 20),

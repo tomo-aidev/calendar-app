@@ -16,8 +16,7 @@ void main() async {
   await LunarCalendar.instance.initialize();
   await SolarTermCalculator.instance.initialize();
 
-  final messageService = DailyMessageService();
-  await messageService.initialize();
+  await DailyMessageService.instance.initialize();
 
   await NotificationService.instance.initialize();
   // await AdService.instance.initialize(); // 次フェーズで有効化

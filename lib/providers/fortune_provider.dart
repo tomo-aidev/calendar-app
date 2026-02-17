@@ -10,7 +10,7 @@ final fortuneServiceProvider = Provider<FortuneService>((ref) {
 });
 
 final dailyMessageServiceProvider = Provider<DailyMessageService>((ref) {
-  return DailyMessageService();
+  return DailyMessageService.instance;
 });
 
 /// Today's fortune based on user profile

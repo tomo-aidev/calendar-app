@@ -2,9 +2,17 @@ import 'dart:convert';
 import 'package:flutter/services.dart';
 import '../models/daily_message.dart';
 
-/// Service for providing daily inspirational messages
+/// Service for providing daily inspirational messages (singleton)
 class DailyMessageService {
+  static DailyMessageService? _instance;
   List<DailyMessage>? _messages;
+
+  DailyMessageService._();
+
+  static DailyMessageService get instance {
+    _instance ??= DailyMessageService._();
+    return _instance!;
+  }
 
   /// Initialize by loading messages from bundled JSON
   Future<void> initialize() async {

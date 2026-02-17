@@ -1,7 +1,7 @@
 class AppConstants {
   AppConstants._();
 
-  static const String appName = '幸運カレンダー';
+  static const String appName = '開運カレンダー';
   static const String appVersion = '1.0.0';
 
   // Calendar data range

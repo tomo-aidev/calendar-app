@@ -86,7 +86,7 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
             ),
             child: const Center(
               child: Text(
-                '\u2728 \u5e78\u904b\u30ab\u30ec\u30f3\u30c0\u30fc \u2728',
+                '\u2728 \u958b\u904b\u30ab\u30ec\u30f3\u30c0\u30fc \u2728',
                 style: TextStyle(
                   color: Colors.white,
                   fontSize: 20,
