@@ -39,7 +39,7 @@ class CalendarGrid extends ConsumerWidget {
         final cellWidth =
             (availableWidth - horizontalPadding * 2 - gridSpacing * 6) / 7;
         final aspectRatio =
-            cellHeight > 0 ? cellWidth / cellHeight : 0.65;
+            (cellHeight > 0 ? cellWidth / cellHeight : 0.65).clamp(0.3, 2.0);
 
         return Column(
           children: [

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../config/colors.dart';
 import '../../models/anniversary_event.dart';
 import '../../providers/anniversary_provider.dart';
+import '../../widgets/responsive_wrapper.dart';
 import 'anniversary_form_screen.dart';
 
 class AnniversaryScreen extends ConsumerWidget {
@@ -42,35 +43,38 @@ class AnniversaryScreen extends ConsumerWidget {
           ),
           // Content
           Expanded(
-            child: anniversaries.isEmpty
-                ? _buildEmptyState(context)
-                : ListView.separated(
-                    padding: const EdgeInsets.all(12),
-                    itemCount: sorted.length,
-                    separatorBuilder: (_, _) => const SizedBox(height: 8),
-                    itemBuilder: (context, index) {
-                      return _AnniversaryCard(
-                        event: sorted[index],
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => AnniversaryFormScreen(
-                                existingEvent: sorted[index],
+            child: ResponsiveWrapper(
+              child: anniversaries.isEmpty
+                  ? _buildEmptyState(context)
+                  : ListView.separated(
+                      padding: const EdgeInsets.all(12),
+                      itemCount: sorted.length,
+                      separatorBuilder: (_, _) => const SizedBox(height: 8),
+                      itemBuilder: (context, index) {
+                        return _AnniversaryCard(
+                          event: sorted[index],
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => AnniversaryFormScreen(
+                                  existingEvent: sorted[index],
+                                ),
                               ),
-                            ),
-                          );
-                        },
-                      );
-                    },
-                  ),
+                            );
+                          },
+                        );
+                      },
+                    ),
+            ),
           ),
           // Add button
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: SizedBox(
-              width: double.infinity,
-              child: ElevatedButton.icon(
+          ResponsiveWrapper(
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: SizedBox(
+                width: double.infinity,
+                child: ElevatedButton.icon(
                 onPressed: () {
                   Navigator.push(
                     context,
@@ -94,6 +98,7 @@ class AnniversaryScreen extends ConsumerWidget {
                 ),
               ),
             ),
+          ),
           ),
         ],
       ),

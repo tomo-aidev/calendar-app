@@ -1,7 +1,4 @@
-// AdMob広告サービス - 次フェーズで有効化
-// コメントアウト: google_mobile_ads依存を一時的に無効化
-
-/*
+// AdMob広告サービス
 import 'dart:io';
 
 import 'package:flutter/foundation.dart';
@@ -54,4 +51,3 @@ class AdService {
 }
 
 typedef BannerAdSize = AdSize;
-*/

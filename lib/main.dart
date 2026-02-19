@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'app.dart';
-// import 'services/ad_service.dart'; // 次フェーズで有効化
+import 'services/ad_service.dart';
 import 'services/calendar/lunar_calendar.dart';
 import 'services/calendar/solar_term_calculator.dart';
 import 'services/daily_message_service.dart';
@@ -19,7 +19,7 @@ void main() async {
   await DailyMessageService.instance.initialize();
 
   await NotificationService.instance.initialize();
-  // await AdService.instance.initialize(); // 次フェーズで有効化
+  await AdService.instance.initialize();
 
   runApp(
     const ProviderScope(

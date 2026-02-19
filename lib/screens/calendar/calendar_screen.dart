@@ -1,10 +1,11 @@
-// import 'package:flutter/foundation.dart'; // 次フェーズで有効化（AdMob用）
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-// import 'package:google_mobile_ads/google_mobile_ads.dart'; // 次フェーズで有効化
+import 'package:google_mobile_ads/google_mobile_ads.dart';
 import '../../config/colors.dart';
 import '../../providers/calendar_provider.dart';
-// import '../../services/ad_service.dart'; // 次フェーズで有効化
+import '../../services/ad_service.dart';
+import '../../widgets/responsive_wrapper.dart';
 import 'widgets/calendar_grid.dart';
 import 'widgets/calendar_list.dart';
 import 'widgets/month_navigation.dart';
@@ -17,9 +18,9 @@ class CalendarScreen extends ConsumerStatefulWidget {
 }
 
 class _CalendarScreenState extends ConsumerState<CalendarScreen> {
-  // 次フェーズで有効化: AdMob関連
-  // BannerAd? _bannerAd;
-  // bool _isBannerAdLoaded = false;
+  // AdMob関連
+  BannerAd? _bannerAd;
+  bool _isBannerAdLoaded = false;
 
   // スワイプアニメーション用
   int _swipeDirection = 0; // -1=前月, 0=なし, 1=次月
@@ -27,27 +28,26 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
   @override
   void initState() {
     super.initState();
-    // _loadBannerAd(); // 次フェーズで有効化
+    _loadBannerAd();
   }
 
-  // 次フェーズで有効化: AdMobバナー読み込み
-  // void _loadBannerAd() {
-  //   if (kIsWeb || !AdService.instance.isSupported) return;
-  //   _bannerAd = AdService.instance.createBannerAd(
-  //     onAdLoaded: (ad) {
-  //       setState(() => _isBannerAdLoaded = true);
-  //     },
-  //     onAdFailedToLoad: (ad, error) {
-  //       debugPrint('Banner ad failed to load: $error');
-  //       ad.dispose();
-  //       _bannerAd = null;
-  //     },
-  //   )..load();
-  // }
+  void _loadBannerAd() {
+    if (kIsWeb || !AdService.instance.isSupported) return;
+    _bannerAd = AdService.instance.createBannerAd(
+      onAdLoaded: (ad) {
+        setState(() => _isBannerAdLoaded = true);
+      },
+      onAdFailedToLoad: (ad, error) {
+        debugPrint('Banner ad failed to load: $error');
+        ad.dispose();
+        _bannerAd = null;
+      },
+    )..load();
+  }
 
   @override
   void dispose() {
-    // _bannerAd?.dispose(); // 次フェーズで有効化
+    _bannerAd?.dispose();
     super.dispose();
   }
 
@@ -58,25 +58,13 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
     return SafeArea(
       child: Column(
         children: [
-          // 次フェーズで有効化: AdMobバナー
-          // if (_isBannerAdLoaded && _bannerAd != null)
-          //   SizedBox(
-          //     width: double.infinity,
-          //     height: _bannerAd!.size.height.toDouble(),
-          //     child: AdWidget(ad: _bannerAd!),
-          //   )
-          // else
-          //   Container(
-          //     width: double.infinity,
-          //     height: 50,
-          //     color: Colors.grey[200],
-          //     child: const Center(
-          //       child: Text(
-          //         'AdMob Banner',
-          //         style: TextStyle(color: Colors.grey),
-          //       ),
-          //     ),
-          //   ),
+          // AdMobバナー
+          if (_isBannerAdLoaded && _bannerAd != null)
+            SizedBox(
+              width: double.infinity,
+              height: _bannerAd!.size.height.toDouble(),
+              child: AdWidget(ad: _bannerAd!),
+            ),
           // Header
           Container(
             width: double.infinity,
@@ -99,52 +87,60 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
               ),
             ),
           ),
-          // Month navigation + view toggle
-          const MonthNavigation(),
-          // Calendar body (swipe left/right to change month)
+          // Month navigation + Calendar body (responsive for iPad)
           Expanded(
-            child: GestureDetector(
-              onHorizontalDragEnd: (details) {
-                final velocity = details.primaryVelocity ?? 0;
-                if (velocity > 300) {
-                  // Swipe right → previous month
-                  final current = ref.read(currentMonthProvider);
-                  setState(() => _swipeDirection = -1);
-                  ref.read(currentMonthProvider.notifier).state = DateTime(
-                    current.year,
-                    current.month - 1,
-                    1,
-                  );
-                } else if (velocity < -300) {
-                  // Swipe left → next month
-                  final current = ref.read(currentMonthProvider);
-                  setState(() => _swipeDirection = 1);
-                  ref.read(currentMonthProvider.notifier).state = DateTime(
-                    current.year,
-                    current.month + 1,
-                    1,
-                  );
-                }
-              },
-              child: AnimatedSwitcher(
-                duration: const Duration(milliseconds: 250),
-                transitionBuilder: (child, animation) {
-                  final offsetX = _swipeDirection >= 0 ? 1.0 : -1.0;
-                  final slideIn = Tween<Offset>(
-                    begin: Offset(offsetX, 0),
-                    end: Offset.zero,
-                  ).animate(CurvedAnimation(
-                    parent: animation,
-                    curve: Curves.easeOutCubic,
-                  ));
-                  return SlideTransition(
-                    position: slideIn,
-                    child: child,
-                  );
-                },
-                child: isGridView
-                    ? CalendarGrid(key: ValueKey(ref.watch(currentMonthProvider)))
-                    : CalendarList(key: ValueKey(ref.watch(currentMonthProvider))),
+            child: ResponsiveWrapper(
+              child: Column(
+                children: [
+                  const MonthNavigation(),
+                  // Calendar body (swipe left/right to change month)
+                  Expanded(
+                    child: GestureDetector(
+                      onHorizontalDragEnd: (details) {
+                        final velocity = details.primaryVelocity ?? 0;
+                        if (velocity > 300) {
+                          // Swipe right → previous month
+                          final current = ref.read(currentMonthProvider);
+                          setState(() => _swipeDirection = -1);
+                          ref.read(currentMonthProvider.notifier).state = DateTime(
+                            current.year,
+                            current.month - 1,
+                            1,
+                          );
+                        } else if (velocity < -300) {
+                          // Swipe left → next month
+                          final current = ref.read(currentMonthProvider);
+                          setState(() => _swipeDirection = 1);
+                          ref.read(currentMonthProvider.notifier).state = DateTime(
+                            current.year,
+                            current.month + 1,
+                            1,
+                          );
+                        }
+                      },
+                      child: AnimatedSwitcher(
+                        duration: const Duration(milliseconds: 250),
+                        transitionBuilder: (child, animation) {
+                          final offsetX = _swipeDirection >= 0 ? 1.0 : -1.0;
+                          final slideIn = Tween<Offset>(
+                            begin: Offset(offsetX, 0),
+                            end: Offset.zero,
+                          ).animate(CurvedAnimation(
+                            parent: animation,
+                            curve: Curves.easeOutCubic,
+                          ));
+                          return SlideTransition(
+                            position: slideIn,
+                            child: child,
+                          );
+                        },
+                        child: isGridView
+                            ? CalendarGrid(key: ValueKey(ref.watch(currentMonthProvider)))
+                            : CalendarList(key: ValueKey(ref.watch(currentMonthProvider))),
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
           ),

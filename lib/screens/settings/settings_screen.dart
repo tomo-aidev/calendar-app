@@ -9,6 +9,7 @@ import '../../providers/calendar_provider.dart';
 import '../../providers/profile_provider.dart';
 import '../../services/notification_service.dart';
 import '../../services/storage_service.dart';
+import '../../widgets/responsive_wrapper.dart';
 import 'privacy_policy_screen.dart';
 import 'terms_screen.dart';
 import 'widgets/profile_form.dart';
@@ -161,6 +162,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 ),
               ),
             ),
+            // Settings content (responsive for iPad)
+            ResponsiveWrapper(
+              child: Column(
+                children: [
             // Profile section
             const _SectionHeader(title: 'プロフィール'),
             ListTile(
@@ -304,6 +309,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               ),
             ),
             const SizedBox(height: 20),
+                ],
+              ),
+            ),
           ],
         ),
       ),

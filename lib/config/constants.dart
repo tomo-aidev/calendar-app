@@ -17,11 +17,11 @@ class AppConstants {
   static const String schedulesBox = 'schedules';
   static const String settingsBox = 'settings';
 
-  // AdMob IDs - 次フェーズで有効化 (test IDs - replace with real IDs before release)
-  // static const String adMobBannerIdAndroid =
-  //     'ca-app-pub-3940256099942544/6300978111';
-  // static const String adMobBannerIdIos =
-  //     'ca-app-pub-3940256099942544/2934735716';
+  // AdMob IDs (test IDs - リリース前に本番IDに差し替え)
+  static const String adMobBannerIdAndroid =
+      'ca-app-pub-3940256099942544/6300978111';
+  static const String adMobBannerIdIos =
+      'ca-app-pub-3940256099942544/2934735716';
 
   // Heavenly Stems (天干)
   static const List<String> heavenlyStems = [

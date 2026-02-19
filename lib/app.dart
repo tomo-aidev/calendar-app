@@ -11,6 +11,8 @@ import 'screens/onboarding/profile_setup_screen.dart';
 import 'services/notification_service.dart';
 import 'services/storage_service.dart';
 import 'providers/anniversary_provider.dart';
+import 'providers/calendar_provider.dart';
+import 'providers/fortune_provider.dart';
 import 'providers/schedule_provider.dart';
 
 class LuckyCalendarApp extends StatelessWidget {
@@ -43,7 +45,8 @@ class MainScreen extends ConsumerStatefulWidget {
   ConsumerState<MainScreen> createState() => _MainScreenState();
 }
 
-class _MainScreenState extends ConsumerState<MainScreen> {
+class _MainScreenState extends ConsumerState<MainScreen>
+    with WidgetsBindingObserver {
   int _currentIndex = 0;
 
   final _screens = const [
@@ -56,6 +59,7 @@ class _MainScreenState extends ConsumerState<MainScreen> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     // Load data from Hive on app startup
     Future.microtask(() {
       ref.read(scheduleProvider.notifier).loadSchedules();
@@ -70,8 +74,21 @@ class _MainScreenState extends ConsumerState<MainScreen> {
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     NotificationService.instance.onNotificationTap = null;
     super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      // Force calendar rebuild to update isToday highlights
+      final currentMonth = ref.read(currentMonthProvider);
+      ref.invalidate(monthCalendarProvider(currentMonth));
+      // Also refresh today's fortune and message
+      ref.invalidate(todayFortuneProvider);
+      ref.invalidate(todayMessageProvider);
+    }
   }
 
   void _handleNotificationTap(String payload) {
