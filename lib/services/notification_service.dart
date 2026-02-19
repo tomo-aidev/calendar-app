@@ -21,6 +21,12 @@ class NotificationService {
   static const String _channelIdDaily = 'daily_message';
   static const String _channelNameDaily = '日替わりメッセージ';
 
+  /// Callback to handle notification tap navigation
+  void Function(String payload)? onNotificationTap;
+
+  /// Stores payload when notification is tapped before callback is registered (cold start)
+  String? _pendingPayload;
+
   Future<void> initialize() async {
     if (_initialized) return;
     if (kIsWeb) {
@@ -67,7 +73,7 @@ class NotificationService {
           const AndroidNotificationChannel(
             _channelIdDaily,
             _channelNameDaily,
-            description: '毎日の開運メッセージ通知',
+            description: '毎日の吉日メッセージ通知',
             importance: Importance.defaultImportance,
           ),
         );
@@ -78,8 +84,24 @@ class NotificationService {
   }
 
   void _onNotificationTap(NotificationResponse response) {
-    // Navigation to specific screen can be handled via a callback or global key
     debugPrint('Notification tapped: ${response.payload}');
+    final payload = response.payload;
+    if (payload != null) {
+      if (onNotificationTap != null) {
+        onNotificationTap!(payload);
+      } else {
+        // Store for later consumption (cold start case)
+        _pendingPayload = payload;
+      }
+    }
+  }
+
+  /// Consume any pending payload from a cold-start notification tap
+  void consumePendingPayload() {
+    if (_pendingPayload != null && onNotificationTap != null) {
+      onNotificationTap!(_pendingPayload!);
+      _pendingPayload = null;
+    }
   }
 
   /// Schedule a notification for a schedule event
@@ -151,7 +173,7 @@ class NotificationService {
 
     await _plugin.zonedSchedule(
       _dailyMessageNotificationId,
-      '✨ 今日の開運メッセージ',
+      '✨ 今日の吉日メッセージ',
       '今日の運勢をチェックしましょう！',
       scheduledDate,
       NotificationDetails(

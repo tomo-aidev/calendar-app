@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/calendar_day.dart';
+import '../services/calendar/holiday_calculator.dart';
 import '../services/calendar/lucky_day_calculator.dart';
 import '../services/calendar/rokuyo_calculator.dart';
 import 'anniversary_provider.dart';
@@ -58,6 +59,7 @@ final monthCalendarProvider =
       luckyDays: luckyDayCalc.calculate(date),
       events: events,
       anniversaries: anniversaries,
+      holiday: HolidayCalculator.getHoliday(date),
     ));
   }
 

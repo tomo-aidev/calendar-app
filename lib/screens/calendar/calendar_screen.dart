@@ -21,6 +21,9 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
   // BannerAd? _bannerAd;
   // bool _isBannerAdLoaded = false;
 
+  // スワイプアニメーション用
+  int _swipeDirection = 0; // -1=前月, 0=なし, 1=次月
+
   @override
   void initState() {
     super.initState();
@@ -86,7 +89,7 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
             ),
             child: const Center(
               child: Text(
-                '\u2728 \u958b\u904b\u30ab\u30ec\u30f3\u30c0\u30fc \u2728',
+                '\u2728 \u5409\u65e5\u30ab\u30ec\u30f3\u30c0\u30fc \u2728',
                 style: TextStyle(
                   color: Colors.white,
                   fontSize: 20,
@@ -98,11 +101,52 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
           ),
           // Month navigation + view toggle
           const MonthNavigation(),
-          // Calendar body
+          // Calendar body (swipe left/right to change month)
           Expanded(
-            child: isGridView
-                ? const CalendarGrid()
-                : const CalendarList(),
+            child: GestureDetector(
+              onHorizontalDragEnd: (details) {
+                final velocity = details.primaryVelocity ?? 0;
+                if (velocity > 300) {
+                  // Swipe right → previous month
+                  final current = ref.read(currentMonthProvider);
+                  setState(() => _swipeDirection = -1);
+                  ref.read(currentMonthProvider.notifier).state = DateTime(
+                    current.year,
+                    current.month - 1,
+                    1,
+                  );
+                } else if (velocity < -300) {
+                  // Swipe left → next month
+                  final current = ref.read(currentMonthProvider);
+                  setState(() => _swipeDirection = 1);
+                  ref.read(currentMonthProvider.notifier).state = DateTime(
+                    current.year,
+                    current.month + 1,
+                    1,
+                  );
+                }
+              },
+              child: AnimatedSwitcher(
+                duration: const Duration(milliseconds: 250),
+                transitionBuilder: (child, animation) {
+                  final offsetX = _swipeDirection >= 0 ? 1.0 : -1.0;
+                  final slideIn = Tween<Offset>(
+                    begin: Offset(offsetX, 0),
+                    end: Offset.zero,
+                  ).animate(CurvedAnimation(
+                    parent: animation,
+                    curve: Curves.easeOutCubic,
+                  ));
+                  return SlideTransition(
+                    position: slideIn,
+                    child: child,
+                  );
+                },
+                child: isGridView
+                    ? CalendarGrid(key: ValueKey(ref.watch(currentMonthProvider)))
+                    : CalendarList(key: ValueKey(ref.watch(currentMonthProvider))),
+              ),
+            ),
           ),
         ],
       ),

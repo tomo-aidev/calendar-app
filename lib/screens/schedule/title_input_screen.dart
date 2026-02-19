@@ -61,6 +61,16 @@ class _TitleInputScreenState extends State<TitleInputScreen> {
               controller: _controller,
               maxLines: 5,
               autofocus: true,
+              contextMenuBuilder: (context, editableTextState) {
+                final items = editableTextState.contextMenuButtonItems
+                    .where((item) =>
+                        item.type != ContextMenuButtonType.liveTextInput)
+                    .toList();
+                return AdaptiveTextSelectionToolbar.buttonItems(
+                  anchors: editableTextState.contextMenuAnchors,
+                  buttonItems: items,
+                );
+              },
               style: const TextStyle(
                 color: AppColors.warmBrown,
                 fontSize: 15,

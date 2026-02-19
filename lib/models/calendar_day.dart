@@ -10,6 +10,7 @@ class CalendarDay {
   final List<LuckyDayType> luckyDays;
   final List<ScheduleEvent> events;
   final List<AnniversaryEvent> anniversaries;
+  final String? holiday;
 
   const CalendarDay({
     required this.date,
@@ -17,7 +18,10 @@ class CalendarDay {
     this.luckyDays = const [],
     this.events = const [],
     this.anniversaries = const [],
+    this.holiday,
   });
+
+  bool get isHoliday => holiday != null;
 
   bool get hasFujoujubi => luckyDays.contains(LuckyDayType.fujoujubi);
 

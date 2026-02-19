@@ -56,7 +56,7 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
                 ),
                 const SizedBox(height: 16),
                 const Text(
-                  '開運日がわかるカレンダー',
+                  '吉日がわかるカレンダー',
                   style: TextStyle(
                     fontSize: 22,
                     fontWeight: FontWeight.bold,
@@ -81,6 +81,18 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
                   onChanged: (_) => setState(() {}),
                   onEditingComplete: () =>
                       FocusScope.of(context).unfocus(),
+                  contextMenuBuilder: (context, editableTextState) {
+                    final items = editableTextState
+                        .contextMenuButtonItems
+                        .where((item) =>
+                            item.type !=
+                            ContextMenuButtonType.liveTextInput)
+                        .toList();
+                    return AdaptiveTextSelectionToolbar.buttonItems(
+                      anchors: editableTextState.contextMenuAnchors,
+                      buttonItems: items,
+                    );
+                  },
                   decoration: InputDecoration(
                     hintText: 'お名前を入力',
                     border: OutlineInputBorder(

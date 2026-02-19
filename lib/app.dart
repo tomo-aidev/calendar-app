@@ -8,6 +8,7 @@ import 'screens/calendar/calendar_screen.dart';
 import 'screens/fortune/fortune_screen.dart';
 import 'screens/settings/settings_screen.dart';
 import 'screens/onboarding/profile_setup_screen.dart';
+import 'services/notification_service.dart';
 import 'services/storage_service.dart';
 import 'providers/anniversary_provider.dart';
 import 'providers/schedule_provider.dart';
@@ -60,6 +61,27 @@ class _MainScreenState extends ConsumerState<MainScreen> {
       ref.read(scheduleProvider.notifier).loadSchedules();
       ref.read(anniversaryProvider.notifier).loadAnniversaries();
     });
+
+    // Register notification tap handler
+    NotificationService.instance.onNotificationTap = _handleNotificationTap;
+    // Consume any pending payload from cold start
+    NotificationService.instance.consumePendingPayload();
+  }
+
+  @override
+  void dispose() {
+    NotificationService.instance.onNotificationTap = null;
+    super.dispose();
+  }
+
+  void _handleNotificationTap(String payload) {
+    if (payload == 'daily_message') {
+      // Navigate to Fortune screen (tab index 1)
+      setState(() => _currentIndex = 1);
+    } else if (payload.startsWith('schedule:')) {
+      // Navigate to Calendar screen (tab index 0)
+      setState(() => _currentIndex = 0);
+    }
   }
 
   @override

@@ -1,5 +1,5 @@
 name: lucky_calendar
-description: "開運カレンダー - 六曜・吉日表示付きカレンダーアプリ"
+description: "吉日カレンダー - 六曜・吉日・祝日表示付きカレンダーアプリ"
 publish_to: 'none'
 version: 1.0.0+1
 
@@ -28,8 +28,8 @@ dependencies:
   flutter_local_notifications: ^18.0.1
   timezone: ^0.9.0
 
-  # Native calendar
-  device_calendar: ^4.3.3
+  # URL launcher (Google Calendar連携)
+  url_launcher: ^6.1.0
 
   # Ads (次フェーズで有効化)
   # google_mobile_ads: ^5.3.0

@@ -4,6 +4,7 @@ import '../../../config/colors.dart';
 import '../../../models/calendar_day.dart';
 import '../../../models/lucky_day.dart';
 import '../../../models/rokuyo.dart';
+import '../../../services/google_calendar_service.dart';
 import '../../schedule/schedule_form_screen.dart';
 import 'tag_info_modal.dart';
 import '../widgets/lucky_day_tag.dart';
@@ -68,6 +69,34 @@ class DayDetailContent extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 12),
+              // Holiday
+              if (day.isHoliday) ...[
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: AppColors.sunday.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(
+                      color: AppColors.sunday.withValues(alpha: 0.3),
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      const Text('🎌', style: TextStyle(fontSize: 20)),
+                      const SizedBox(width: 8),
+                      Text(
+                        day.holiday!,
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.sunday,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 12),
+              ],
               // Rokuyo
               if (day.rokuyo != Rokuyo.unknown) ...[
                 Container(
@@ -152,6 +181,22 @@ class DayDetailContent extends StatelessWidget {
                         ),
                       ),
                     )),
+                // Google Calendar button for auspicious days
+                if (day.luckyDays.any((d) => d.isAuspicious)) ...[
+                  SizedBox(
+                    width: double.infinity,
+                    child: OutlinedButton.icon(
+                      onPressed: () => _addToGoogleCalendar(),
+                      icon: const Icon(Icons.event_available,
+                          color: AppColors.gold),
+                      label: const Text('Googleカレンダーに吉日を追加'),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: AppColors.warmBrown,
+                        side: const BorderSide(color: AppColors.gold),
+                      ),
+                    ),
+                  ),
+                ],
                 const SizedBox(height: 16),
               ],
               // Events
@@ -222,6 +267,21 @@ class DayDetailContent extends StatelessWidget {
           ),
         );
       },
+    );
+  }
+
+  void _addToGoogleCalendar() {
+    final auspiciousDays =
+        day.luckyDays.where((d) => d.isAuspicious).toList();
+    final title = auspiciousDays.map((d) => d.displayName).join('・');
+    final description = auspiciousDays
+        .map((d) => '${d.displayName}: ${d.description}')
+        .join('\n\n');
+
+    GoogleCalendarService.addEvent(
+      title: '【吉日】$title',
+      date: day.date,
+      description: description,
     );
   }
 }

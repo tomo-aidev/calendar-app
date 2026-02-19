@@ -194,7 +194,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             SwitchListTile(
               secondary: const Icon(Icons.notifications, color: AppColors.gold),
               title: const Text('日替わりメッセージ通知'),
-              subtitle: const Text('毎朝、開運メッセージをお届け'),
+              subtitle: const Text('毎朝、吉日メッセージをお届け'),
               value: _dailyNotificationEnabled,
               activeTrackColor: AppColors.gold,
               onChanged: _toggleDailyNotification,
@@ -267,7 +267,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   applicationVersion: AppConstants.appVersion,
                   children: [
                     const Text(
-                      '六曜・吉日がわかる開運カレンダーアプリです。',
+                      '六曜・吉日・祝日がわかるカレンダーアプリです。',
                     ),
                   ],
                 );

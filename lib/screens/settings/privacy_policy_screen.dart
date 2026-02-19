@@ -30,11 +30,11 @@ class PrivacyPolicyScreen extends StatelessWidget {
             _buildBullet('ニックネーム、生年月日、血液型、星座（運勢表示のため）'),
             _buildBullet('カレンダーの予定・記念日データ'),
             _buildBullet('アプリの設定情報（通知時刻、表示設定等）'),
-            _buildSectionTitle('2. 端末のカレンダーへのアクセス'),
+            _buildSectionTitle('2. Googleカレンダー連携について'),
             _buildParagraph(
-              '本アプリは、端末のカレンダーアプリとの連携機能を提供するため、'
-              'カレンダーへのアクセス許可をお願いする場合があります。'
-              'アクセスは端末内の処理にのみ使用され、外部への送信は行いません。',
+              '本アプリでは、吉日情報をGoogleカレンダーに追加する機能を提供しています。'
+              'この機能はブラウザ経由でGoogleカレンダーのWebサイトを開くものであり、'
+              '端末内のカレンダーデータにはアクセスしません。',
             ),
             _buildSectionTitle('3. 広告配信について'),
             _buildParagraph(
@@ -50,7 +50,7 @@ class PrivacyPolicyScreen extends StatelessWidget {
             _buildLink('Google プライバシーポリシー', 'https://policies.google.com/privacy'),
             _buildSectionTitle('4. 通知機能について'),
             _buildParagraph(
-              '本アプリでは、毎日の開運メッセージを通知でお届けする機能があります。'
+              '本アプリでは、毎日の吉日メッセージを通知でお届けする機能があります。'
               '通知の送受信はすべて端末内で処理され、外部サーバーは利用しません。'
               '通知は設定画面からいつでもオフにできます。',
             ),
@@ -75,7 +75,7 @@ class PrivacyPolicyScreen extends StatelessWidget {
             const SizedBox(height: 24),
             Center(
               child: Text(
-                '最終更新日: 2026年2月17日',
+                '最終更新日: 2026年2月18日',
                 style: TextStyle(fontSize: 12, color: Colors.grey[500]),
               ),
             ),

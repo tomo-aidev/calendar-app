@@ -22,6 +22,7 @@ class DayCell extends StatelessWidget {
     final weekday = day.date.weekday; // 1=Mon ... 7=Sun
     final isSunday = weekday == 7;
     final isSaturday = weekday == 6;
+    final isRedDay = isSunday || day.isHoliday;
 
     return GestureDetector(
       onTap: onTap,
@@ -47,7 +48,7 @@ class DayCell extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
-                    color: isSunday
+                    color: isRedDay
                         ? AppColors.sunday
                         : isSaturday
                             ? AppColors.saturday
@@ -71,6 +72,19 @@ class DayCell extends StatelessWidget {
                   ),
               ],
             ),
+            // Holiday name
+            if (day.isHoliday)
+              Text(
+                day.holiday!,
+                style: const TextStyle(
+                  fontSize: 7,
+                  color: AppColors.sunday,
+                  fontWeight: FontWeight.bold,
+                  height: 1.1,
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
             // Lucky day tags
             if (day.luckyDays.isNotEmpty) ...[
               const SizedBox(height: 1),
