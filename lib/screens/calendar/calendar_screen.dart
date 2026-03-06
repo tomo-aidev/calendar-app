@@ -1,10 +1,7 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:google_mobile_ads/google_mobile_ads.dart';
 import '../../config/colors.dart';
 import '../../providers/calendar_provider.dart';
-import '../../services/ad_service.dart';
 import '../../widgets/responsive_wrapper.dart';
 import 'widgets/calendar_grid.dart';
 import 'widgets/calendar_list.dart';
@@ -18,38 +15,8 @@ class CalendarScreen extends ConsumerStatefulWidget {
 }
 
 class _CalendarScreenState extends ConsumerState<CalendarScreen> {
-  // AdMob関連
-  BannerAd? _bannerAd;
-  bool _isBannerAdLoaded = false;
-
   // スワイプアニメーション用
   int _swipeDirection = 0; // -1=前月, 0=なし, 1=次月
-
-  @override
-  void initState() {
-    super.initState();
-    _loadBannerAd();
-  }
-
-  void _loadBannerAd() {
-    if (kIsWeb || !AdService.instance.isSupported) return;
-    _bannerAd = AdService.instance.createBannerAd(
-      onAdLoaded: (ad) {
-        setState(() => _isBannerAdLoaded = true);
-      },
-      onAdFailedToLoad: (ad, error) {
-        debugPrint('Banner ad failed to load: $error');
-        ad.dispose();
-        _bannerAd = null;
-      },
-    )..load();
-  }
-
-  @override
-  void dispose() {
-    _bannerAd?.dispose();
-    super.dispose();
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -58,13 +25,6 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
     return SafeArea(
       child: Column(
         children: [
-          // AdMobバナー
-          if (_isBannerAdLoaded && _bannerAd != null)
-            SizedBox(
-              width: double.infinity,
-              height: _bannerAd!.size.height.toDouble(),
-              child: AdWidget(ad: _bannerAd!),
-            ),
           // Header
           Container(
             width: double.infinity,

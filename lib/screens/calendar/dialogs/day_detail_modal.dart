@@ -4,6 +4,8 @@ import '../../../config/colors.dart';
 import '../../../models/calendar_day.dart';
 import '../../../models/lucky_day.dart';
 import '../../../models/rokuyo.dart';
+import '../../../models/work_entry.dart';
+import '../../../providers/work_entry_provider.dart';
 import '../../../services/google_calendar_service.dart';
 import '../../schedule/schedule_form_screen.dart';
 import 'tag_info_modal.dart';
@@ -21,7 +23,7 @@ void showDayDetailModal(BuildContext context, WidgetRef ref, CalendarDay day) {
   );
 }
 
-class DayDetailContent extends StatelessWidget {
+class DayDetailContent extends ConsumerWidget {
   final CalendarDay day;
   final BuildContext parentContext;
 
@@ -35,7 +37,7 @@ class DayDetailContent extends StatelessWidget {
   ];
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return DraggableScrollableSheet(
       initialChildSize: 0.6,
       maxChildSize: 0.85,
@@ -135,6 +137,8 @@ class DayDetailContent extends StatelessWidget {
                 ),
                 const SizedBox(height: 16),
               ],
+              // Work entry section
+              _buildWorkEntrySection(context, ref),
               // Lucky days
               if (day.luckyDays.isNotEmpty) ...[
                 const Text(
@@ -267,6 +271,161 @@ class DayDetailContent extends StatelessWidget {
           ),
         );
       },
+    );
+  }
+
+  Widget _buildWorkEntrySection(BuildContext context, WidgetRef ref) {
+    final resolvedType = ref.watch(resolvedWorkTypeProvider(day.date));
+    final individualEntry =
+        ref.watch(workEntryProvider.notifier).getEntryForDate(day.date);
+    final isIndividual = individualEntry != null;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          '勤務',
+          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+        ),
+        const SizedBox(height: 8),
+        if (resolvedType != null)
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: resolvedType.color.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(
+                color: resolvedType.color.withValues(alpha: 0.3),
+              ),
+            ),
+            child: Row(
+              children: [
+                Text(resolvedType.emoji,
+                    style: const TextStyle(fontSize: 20)),
+                const SizedBox(width: 8),
+                Text(
+                  resolvedType.displayName,
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: resolvedType.color,
+                  ),
+                ),
+                if (isIndividual) ...[
+                  const SizedBox(width: 8),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 6, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: Colors.grey[200],
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    child: const Text('個別設定',
+                        style: TextStyle(fontSize: 10, color: Colors.grey)),
+                  ),
+                ],
+                const Spacer(),
+                IconButton(
+                  icon: const Icon(Icons.delete_outline,
+                      color: Colors.grey, size: 20),
+                  tooltip: 'この日の勤務を削除',
+                  onPressed: () {
+                    if (isIndividual) {
+                      ref
+                          .read(workEntryProvider.notifier)
+                          .deleteWorkEntryForDate(day.date);
+                    } else {
+                      // Schedule-derived: exclude this specific date
+                      ref
+                          .read(excludedWorkDatesProvider.notifier)
+                          .excludeDate(day.date);
+                    }
+                    Navigator.pop(context);
+                  },
+                ),
+              ],
+            ),
+          )
+        else
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Colors.grey[50],
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: const Center(
+              child: Text('勤務設定なし',
+                  style: TextStyle(color: Colors.grey)),
+            ),
+          ),
+        const SizedBox(height: 8),
+        SizedBox(
+          width: double.infinity,
+          child: OutlinedButton.icon(
+            onPressed: () => _showWorkEntryActionSheet(context, ref),
+            icon: const Icon(Icons.add, size: 18),
+            label: const Text('シフト・在宅・休日の追加'),
+            style: OutlinedButton.styleFrom(
+              foregroundColor: AppColors.workShift,
+              side: BorderSide(color: AppColors.workShift.withValues(alpha: 0.5)),
+            ),
+          ),
+        ),
+        const SizedBox(height: 16),
+      ],
+    );
+  }
+
+  void _showWorkEntryActionSheet(BuildContext context, WidgetRef ref) {
+    showModalBottomSheet(
+      context: context,
+      builder: (sheetCtx) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: Icon(Icons.business, color: AppColors.workShift),
+              title: const Text('シフト'),
+              onTap: () {
+                Navigator.pop(sheetCtx);
+                ref.read(excludedWorkDatesProvider.notifier).removeExclusion(day.date);
+                ref.read(workEntryProvider.notifier).addWorkEntry(
+                      date: day.date,
+                      type: WorkEntryType.shift,
+                    );
+                Navigator.pop(context); // close day detail
+              },
+            ),
+            ListTile(
+              leading: Icon(Icons.home, color: AppColors.workFromHome),
+              title: const Text('在宅ワーク'),
+              onTap: () {
+                Navigator.pop(sheetCtx);
+                ref.read(excludedWorkDatesProvider.notifier).removeExclusion(day.date);
+                ref.read(workEntryProvider.notifier).addWorkEntry(
+                      date: day.date,
+                      type: WorkEntryType.workFromHome,
+                    );
+                Navigator.pop(context);
+              },
+            ),
+            ListTile(
+              leading: Icon(Icons.beach_access, color: AppColors.workHoliday),
+              title: const Text('休日'),
+              onTap: () {
+                Navigator.pop(sheetCtx);
+                ref.read(excludedWorkDatesProvider.notifier).removeExclusion(day.date);
+                ref.read(workEntryProvider.notifier).addWorkEntry(
+                      date: day.date,
+                      type: WorkEntryType.holiday,
+                    );
+                Navigator.pop(context);
+              },
+            ),
+            const SizedBox(height: 8),
+          ],
+        ),
+      ),
     );
   }
 

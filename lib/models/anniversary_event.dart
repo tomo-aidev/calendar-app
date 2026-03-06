@@ -1,5 +1,6 @@
 /// 記念日カテゴリ
 enum AnniversaryCategory {
+  birthday,
   couple,
   family,
   lifeEvent,
@@ -10,6 +11,8 @@ enum AnniversaryCategory {
 extension AnniversaryCategoryExtension on AnniversaryCategory {
   String get displayName {
     switch (this) {
+      case AnniversaryCategory.birthday:
+        return '誕生日';
       case AnniversaryCategory.couple:
         return 'カップル・パートナー';
       case AnniversaryCategory.family:
@@ -25,6 +28,8 @@ extension AnniversaryCategoryExtension on AnniversaryCategory {
 
   String get emoji {
     switch (this) {
+      case AnniversaryCategory.birthday:
+        return '🎂';
       case AnniversaryCategory.couple:
         return '💑';
       case AnniversaryCategory.family:
@@ -98,6 +103,9 @@ enum AnniversaryType {
 
   // --- フリーワード ---
   custom,
+
+  // --- 誕生日 ---
+  birthday,
 }
 
 extension AnniversaryTypeExtension on AnniversaryType {
@@ -206,6 +214,10 @@ extension AnniversaryTypeExtension on AnniversaryType {
       // フリーワード
       case AnniversaryType.custom:
         return 'その他（自由入力）';
+
+      // 誕生日
+      case AnniversaryType.birthday:
+        return '誕生日';
     }
   }
 
@@ -268,6 +280,9 @@ extension AnniversaryTypeExtension on AnniversaryType {
 
       case AnniversaryType.custom:
         return AnniversaryCategory.healthPetOther;
+
+      case AnniversaryType.birthday:
+        return AnniversaryCategory.birthday;
     }
   }
 }

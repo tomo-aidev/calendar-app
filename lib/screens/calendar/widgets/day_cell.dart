@@ -1,14 +1,26 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../config/colors.dart';
 import '../../../models/calendar_day.dart';
 import '../../../models/rokuyo.dart';
 import '../../../models/schedule_event.dart';
+import '../../../models/work_entry.dart';
+import '../../../providers/calendar_provider.dart';
 import 'lucky_day_tag.dart';
 
-class DayCell extends StatelessWidget {
+class DayCell extends ConsumerWidget {
   final CalendarDay day;
   final VoidCallback? onTap;
   final void Function(ScheduleEvent)? onEventTap;
+
+  // フォントサイズ定義: [S, M, L]
+  static const _dateSizes = [13.0, 16.0, 19.0];
+  static const _rokuyoSizes = [7.0, 9.0, 11.0];
+  static const _scheduleSizes = [7.0, 9.0, 11.0];
+  // 祝日ラベルはdateIdxに連動 (Lで大きく)
+  static const _holidaySizes = [6.0, 7.0, 9.0];
+  // 勤務ラベル (セル下部)
+  static const _workLabelSizes = [6.0, 7.0, 8.0];
 
   const DayCell({
     super.key,
@@ -18,17 +30,36 @@ class DayCell extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final dateIdx = ref.watch(dateFontSizeIndexProvider);
+    final schedIdx = ref.watch(scheduleFontSizeIndexProvider);
+
+    final dateFontSize = _dateSizes[dateIdx];
+    final rokuyoFontSize = _rokuyoSizes[dateIdx];
+    final scheduleFontSize = _scheduleSizes[schedIdx];
+    final holidayFontSize = _holidaySizes[dateIdx]; // dateIdxに連動
+    final workLabelSize = _workLabelSizes[dateIdx];
+
     final weekday = day.date.weekday; // 1=Mon ... 7=Sun
     final isSunday = weekday == 7;
     final isSaturday = weekday == 6;
     final isRedDay = isSunday || day.isHoliday;
 
+    // Work type background color
+    Color bgColor;
+    if (day.isToday) {
+      bgColor = AppColors.today.withValues(alpha: 0.1);
+    } else if (day.hasWorkType) {
+      bgColor = day.workType!.color.withValues(alpha: 0.06);
+    } else {
+      bgColor = Colors.white;
+    }
+
     return GestureDetector(
       onTap: onTap,
       child: Container(
         decoration: BoxDecoration(
-          color: day.isToday ? AppColors.today.withValues(alpha: 0.1) : Colors.white,
+          color: bgColor,
           border: Border.all(
             color: day.isToday ? AppColors.today : Colors.grey[300]!,
             width: day.isToday ? 2 : 0.5,
@@ -46,7 +77,7 @@ class DayCell extends StatelessWidget {
                 Text(
                   '${day.date.day}',
                   style: TextStyle(
-                    fontSize: 16,
+                    fontSize: dateFontSize,
                     fontWeight: FontWeight.bold,
                     color: isRedDay
                         ? AppColors.sunday
@@ -59,7 +90,7 @@ class DayCell extends StatelessWidget {
                   Text(
                     day.rokuyo.shortName,
                     style: TextStyle(
-                      fontSize: 9,
+                      fontSize: rokuyoFontSize,
                       fontWeight: day.rokuyo.isAuspicious
                           ? FontWeight.bold
                           : FontWeight.normal,
@@ -76,8 +107,8 @@ class DayCell extends StatelessWidget {
             if (day.isHoliday)
               Text(
                 day.holiday!,
-                style: const TextStyle(
-                  fontSize: 7,
+                style: TextStyle(
+                  fontSize: holidayFontSize,
                   color: AppColors.sunday,
                   fontWeight: FontWeight.bold,
                   height: 1.1,
@@ -120,7 +151,7 @@ class DayCell extends StatelessWidget {
                           child: Text(
                             '🎂${a.personName}',
                             style: TextStyle(
-                              fontSize: 8,
+                              fontSize: scheduleFontSize,
                               color: AppColors.red.withValues(alpha: 0.8),
                               height: 1.1,
                             ),
@@ -132,7 +163,7 @@ class DayCell extends StatelessWidget {
                       Text(
                         '+${day.anniversaries.length - 1}記念日',
                         style: TextStyle(
-                          fontSize: 7,
+                          fontSize: holidayFontSize,
                           color: AppColors.red.withValues(alpha: 0.6),
                         ),
                       ),
@@ -157,8 +188,8 @@ class DayCell extends StatelessWidget {
                               ),
                               child: Text(
                                 event.title,
-                                style: const TextStyle(
-                                  fontSize: 8,
+                                style: TextStyle(
+                                  fontSize: scheduleFontSize,
                                   color: AppColors.warmBrown,
                                   height: 1.1,
                                 ),
@@ -172,7 +203,7 @@ class DayCell extends StatelessWidget {
                       Text(
                         '+${day.events.length - (day.hasAnniversaries ? 1 : 2)}',
                         style: TextStyle(
-                          fontSize: 8,
+                          fontSize: scheduleFontSize,
                           color: AppColors.gold.withValues(alpha: 0.8),
                           fontWeight: FontWeight.bold,
                         ),
@@ -180,9 +211,54 @@ class DayCell extends StatelessWidget {
                   ],
                 ),
               ),
+            ] else if (!day.hasWorkType) ...[
+              // Spacer when no events and no work type
+              const Spacer(),
+            ] else ...[
+              const Spacer(),
             ],
+            // Work type label at BOTTOM (fixed position)
+            if (day.hasWorkType) _buildWorkLabel(day, workLabelSize),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildWorkLabel(CalendarDay day, double fontSize) {
+    final type = day.workType!;
+    String label;
+    if (type == WorkEntryType.holiday) {
+      label = '休日';
+    } else {
+      final h = day.workStartHour;
+      final m = day.workStartMinute;
+      if (h != null && m != null) {
+        label =
+            '${type.displayName} ${h.toString().padLeft(2, '0')}:${m.toString().padLeft(2, '0')}〜';
+      } else {
+        label = type.displayName;
+      }
+    }
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 1),
+      decoration: BoxDecoration(
+        color: type.color.withValues(alpha: 0.85),
+        borderRadius: BorderRadius.circular(2),
+      ),
+      child: Text(
+        label,
+        style: TextStyle(
+          fontSize: fontSize,
+          color: Colors.white,
+          fontWeight: FontWeight.bold,
+          height: 1.1,
+        ),
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+        textAlign: TextAlign.center,
       ),
     );
   }

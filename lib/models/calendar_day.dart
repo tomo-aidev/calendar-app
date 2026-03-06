@@ -2,6 +2,7 @@ import 'anniversary_event.dart';
 import 'lucky_day.dart';
 import 'rokuyo.dart';
 import 'schedule_event.dart';
+import 'work_entry.dart';
 
 /// Composite model representing a single calendar day with all its metadata
 class CalendarDay {
@@ -11,6 +12,9 @@ class CalendarDay {
   final List<ScheduleEvent> events;
   final List<AnniversaryEvent> anniversaries;
   final String? holiday;
+  final WorkEntryType? workType;
+  final int? workStartHour;
+  final int? workStartMinute;
 
   const CalendarDay({
     required this.date,
@@ -19,6 +23,9 @@ class CalendarDay {
     this.events = const [],
     this.anniversaries = const [],
     this.holiday,
+    this.workType,
+    this.workStartHour,
+    this.workStartMinute,
   });
 
   bool get isHoliday => holiday != null;
@@ -33,6 +40,8 @@ class CalendarDay {
   bool get hasEvents => events.isNotEmpty;
 
   bool get hasAnniversaries => anniversaries.isNotEmpty;
+
+  bool get hasWorkType => workType != null;
 
   bool get isToday {
     final now = DateTime.now();

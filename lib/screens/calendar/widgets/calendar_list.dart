@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../config/colors.dart';
 import '../../../models/calendar_day.dart';
 import '../../../models/rokuyo.dart';
+import '../../../models/work_entry.dart';
 import '../../../providers/calendar_provider.dart';
 import '../dialogs/day_detail_modal.dart';
 import 'lucky_day_tag.dart';
@@ -29,9 +30,14 @@ class CalendarList extends ConsumerWidget {
   }
 }
 
-class _DayListTile extends StatelessWidget {
+class _DayListTile extends ConsumerWidget {
   final CalendarDay day;
   final VoidCallback? onTap;
+
+  // フォントサイズ定義: [S, M, L]
+  static const _dateSizes = [17.0, 20.0, 23.0];
+  static const _rokuyoSizes = [10.0, 12.0, 14.0];
+  static const _eventCountSizes = [10.0, 12.0, 14.0];
 
   const _DayListTile({required this.day, this.onTap});
 
@@ -39,8 +45,26 @@ class _DayListTile extends StatelessWidget {
     '', '\u6708', '\u706b', '\u6c34', '\u6728', '\u91d1', '\u571f', '\u65e5'
   ];
 
+  String _workBadgeText(CalendarDay day) {
+    final type = day.workType!;
+    if (type == WorkEntryType.holiday) return '休日';
+    final h = day.workStartHour;
+    final m = day.workStartMinute;
+    if (h != null && m != null) {
+      return '${type.emoji} ${type.displayName} ${h.toString().padLeft(2, '0')}:${m.toString().padLeft(2, '0')}〜';
+    }
+    return '${type.emoji} ${type.displayName}';
+  }
+
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final dateIdx = ref.watch(dateFontSizeIndexProvider);
+    final schedIdx = ref.watch(scheduleFontSizeIndexProvider);
+
+    final dateFontSize = _dateSizes[dateIdx];
+    final rokuyoFontSize = _rokuyoSizes[dateIdx];
+    final eventCountFontSize = _eventCountSizes[schedIdx];
+
     final isSunday = day.date.weekday == 7;
     final isSaturday = day.date.weekday == 6;
 
@@ -67,7 +91,7 @@ class _DayListTile extends StatelessWidget {
                     Text(
                       '${day.date.day}',
                       style: TextStyle(
-                        fontSize: 20,
+                        fontSize: dateFontSize,
                         fontWeight: FontWeight.bold,
                         color: day.isToday
                             ? Colors.white
@@ -99,7 +123,7 @@ class _DayListTile extends StatelessWidget {
                       Text(
                         day.rokuyo.displayName,
                         style: TextStyle(
-                          fontSize: 12,
+                          fontSize: rokuyoFontSize,
                           color: day.rokuyo.isAuspicious
                               ? AppColors.taian
                               : Colors.grey[600],
@@ -119,23 +143,46 @@ class _DayListTile extends StatelessWidget {
                   ],
                 ),
               ),
-              // Event count
-              if (day.hasEvents)
-                Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: AppColors.gold.withValues(alpha: 0.2),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Text(
-                    '${day.events.length}\u4ef6',
-                    style: const TextStyle(
-                      fontSize: 12,
-                      color: AppColors.gold,
+              // Work type + Event count badges
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (day.hasWorkType)
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 4),
+                      margin: const EdgeInsets.only(right: 4),
+                      decoration: BoxDecoration(
+                        color: day.workType!.color.withValues(alpha: 0.15),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Text(
+                        _workBadgeText(day),
+                        style: TextStyle(
+                          fontSize: eventCountFontSize,
+                          color: day.workType!.color,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
                     ),
-                  ),
-                ),
+                  if (day.hasEvents)
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: AppColors.gold.withValues(alpha: 0.2),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Text(
+                        '${day.events.length}\u4ef6',
+                        style: TextStyle(
+                          fontSize: eventCountFontSize,
+                          color: AppColors.gold,
+                        ),
+                      ),
+                    ),
+                ],
+              ),
             ],
           ),
         ),

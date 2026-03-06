@@ -15,11 +15,17 @@ class NotificationService {
 
   bool _initialized = false;
 
-  static const int _dailyMessageNotificationId = 99999;
+  // Channel IDs
   static const String _channelIdSchedule = 'schedule_notifications';
   static const String _channelNameSchedule = '予定通知';
-  static const String _channelIdDaily = 'daily_message';
-  static const String _channelNameDaily = '日替わりメッセージ';
+  static const String _channelIdWorkReminder = 'work_reminder';
+  static const String _channelNameWorkReminder = '勤務リマインダー';
+  static const String _channelIdLuckyDay = 'lucky_day';
+  static const String _channelNameLuckyDay = '吉日通知';
+
+  // Notification ID ranges
+  static const int _workReminderBaseId = 80000;
+  static const int _luckyDayBaseId = 81000;
 
   /// Callback to handle notification tap navigation
   void Function(String payload)? onNotificationTap;
@@ -71,9 +77,17 @@ class NotificationService {
         );
         await androidPlugin.createNotificationChannel(
           const AndroidNotificationChannel(
-            _channelIdDaily,
-            _channelNameDaily,
-            description: '毎日の吉日メッセージ通知',
+            _channelIdWorkReminder,
+            _channelNameWorkReminder,
+            description: '勤務スケジュールの通知',
+            importance: Importance.high,
+          ),
+        );
+        await androidPlugin.createNotificationChannel(
+          const AndroidNotificationChannel(
+            _channelIdLuckyDay,
+            _channelNameLuckyDay,
+            description: '吉日の通知',
             importance: Importance.defaultImportance,
           ),
         );
@@ -150,36 +164,108 @@ class NotificationService {
     await _plugin.cancel(eventId.hashCode);
   }
 
-  /// Schedule daily morning message notification
-  Future<void> scheduleDailyMessage({
-    int hour = 7,
-    int minute = 0,
+  // --- Work Reminder Notifications ---
+
+  /// Get notification ID for a work reminder on a given date
+  int _workReminderId(DateTime date) {
+    final dayOfYear = date.difference(DateTime(date.year, 1, 1)).inDays;
+    return _workReminderBaseId + (dayOfYear % 366);
+  }
+
+  /// Schedule a work reminder notification for a specific date
+  Future<void> scheduleWorkReminder({
+    required DateTime date,
+    required String message,
+    required int hour,
+    required int minute,
   }) async {
     if (kIsWeb) return;
 
-    final now = tz.TZDateTime.now(tz.local);
-    var scheduledDate = tz.TZDateTime(
+    final scheduledDate = tz.TZDateTime(
       tz.local,
-      now.year,
-      now.month,
-      now.day,
+      date.year,
+      date.month,
+      date.day,
       hour,
       minute,
     );
 
-    if (scheduledDate.isBefore(now)) {
-      scheduledDate = scheduledDate.add(const Duration(days: 1));
-    }
+    // Don't schedule if in the past
+    if (scheduledDate.isBefore(tz.TZDateTime.now(tz.local))) return;
 
     await _plugin.zonedSchedule(
-      _dailyMessageNotificationId,
-      '✨ 今日の吉日メッセージ',
-      '今日の運勢をチェックしましょう！',
+      _workReminderId(date),
+      '⏰ 勤務リマインダー',
+      message,
       scheduledDate,
       NotificationDetails(
         android: const AndroidNotificationDetails(
-          _channelIdDaily,
-          _channelNameDaily,
+          _channelIdWorkReminder,
+          _channelNameWorkReminder,
+          importance: Importance.high,
+          priority: Priority.high,
+        ),
+        iOS: const DarwinNotificationDetails(
+          presentAlert: true,
+          presentBadge: true,
+          presentSound: true,
+        ),
+      ),
+      androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
+      uiLocalNotificationDateInterpretation:
+          UILocalNotificationDateInterpretation.absoluteTime,
+      payload: 'work_reminder:${date.toIso8601String()}',
+    );
+  }
+
+  /// Cancel all work reminder notifications
+  Future<void> cancelAllWorkReminders() async {
+    if (kIsWeb) return;
+    final now = DateTime.now();
+    for (int i = 0; i < 31; i++) {
+      final date = now.add(Duration(days: i));
+      await _plugin.cancel(_workReminderId(date));
+    }
+  }
+
+  // --- Lucky Day Notifications ---
+
+  /// Get notification ID for a lucky day notification on a given date
+  int _luckyDayId(DateTime date) {
+    final dayOfYear = date.difference(DateTime(date.year, 1, 1)).inDays;
+    return _luckyDayBaseId + (dayOfYear % 366);
+  }
+
+  /// Schedule a lucky day notification for a specific date
+  Future<void> scheduleLuckyDayNotification({
+    required DateTime date,
+    required String message,
+    required int hour,
+    required int minute,
+  }) async {
+    if (kIsWeb) return;
+
+    final scheduledDate = tz.TZDateTime(
+      tz.local,
+      date.year,
+      date.month,
+      date.day,
+      hour,
+      minute,
+    );
+
+    // Don't schedule if in the past
+    if (scheduledDate.isBefore(tz.TZDateTime.now(tz.local))) return;
+
+    await _plugin.zonedSchedule(
+      _luckyDayId(date),
+      '🌟 吉日のお知らせ',
+      message,
+      scheduledDate,
+      NotificationDetails(
+        android: const AndroidNotificationDetails(
+          _channelIdLuckyDay,
+          _channelNameLuckyDay,
           importance: Importance.defaultImportance,
           priority: Priority.defaultPriority,
         ),
@@ -192,15 +278,25 @@ class NotificationService {
       androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
       uiLocalNotificationDateInterpretation:
           UILocalNotificationDateInterpretation.absoluteTime,
-      matchDateTimeComponents: DateTimeComponents.time,
-      payload: 'daily_message',
+      payload: 'lucky_day:${date.toIso8601String()}',
     );
   }
 
-  /// Cancel daily message notification
-  Future<void> cancelDailyMessage() async {
+  /// Cancel all lucky day notifications
+  Future<void> cancelAllLuckyDayNotifications() async {
     if (kIsWeb) return;
-    await _plugin.cancel(_dailyMessageNotificationId);
+    final now = DateTime.now();
+    for (int i = 0; i < 31; i++) {
+      final date = now.add(Duration(days: i));
+      await _plugin.cancel(_luckyDayId(date));
+    }
+  }
+
+  /// Get count of currently pending notifications
+  Future<int> getPendingNotificationCount() async {
+    if (kIsWeb) return 0;
+    final pending = await _plugin.pendingNotificationRequests();
+    return pending.length;
   }
 
   /// Request notification permissions (iOS)

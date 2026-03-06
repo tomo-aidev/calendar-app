@@ -1,3 +1,5 @@
+import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'app.dart';
@@ -16,7 +18,10 @@ void main() async {
   await LunarCalendar.instance.initialize();
   await SolarTermCalculator.instance.initialize();
 
-  await DailyMessageService.instance.initialize();
+  // Initialize daily message service (Android only — fortune feature)
+  if (!kIsWeb && Platform.isAndroid) {
+    await DailyMessageService.instance.initialize();
+  }
 
   await NotificationService.instance.initialize();
   await AdService.instance.initialize();

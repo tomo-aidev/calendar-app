@@ -59,12 +59,17 @@ class AppColors {
   static const Color warmBrown = Color(0xFF5D4037);
   static const Color formBg = Color(0xFFFFF0F5);
 
-  // Fortune star colors
-  static const Color fortuneOverall = gold;
+  // Fortune colors (Android only)
+  static const Color fortuneOverall = Color(0xFFD4AF37);
   static const Color fortuneLove = Color(0xFFE91E63);
   static const Color fortuneWork = Color(0xFF1976D2);
-  static const Color fortuneMoney = Color(0xFFFFB300);
-  static const Color fortuneHealth = Color(0xFF4CAF50);
+  static const Color fortuneMoney = Color(0xFF4CAF50);
+  static const Color fortuneHealth = Color(0xFFFF9800);
+
+  // Work entry type colors
+  static const Color workShift = Color(0xFF1976D2); // シフト - 青
+  static const Color workFromHome = Color(0xFF4CAF50); // 在宅 - 緑
+  static const Color workHoliday = Color(0xFFE91E63); // 休日 - ピンク
 
   // Lucky color map (Japanese name → Color)
   static const Map<String, Color> luckyColorMap = {

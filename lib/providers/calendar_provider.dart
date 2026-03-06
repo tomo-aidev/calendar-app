@@ -5,6 +5,7 @@ import '../services/calendar/lucky_day_calculator.dart';
 import '../services/calendar/rokuyo_calculator.dart';
 import 'anniversary_provider.dart';
 import 'schedule_provider.dart';
+import 'work_entry_provider.dart';
 
 /// Current displayed month
 final currentMonthProvider = StateProvider<DateTime>((ref) {
@@ -14,6 +15,10 @@ final currentMonthProvider = StateProvider<DateTime>((ref) {
 
 /// Calendar view mode (grid/list)
 final isGridViewProvider = StateProvider<bool>((ref) => true);
+
+/// Font size index: 0=S, 1=M, 2=L
+final dateFontSizeIndexProvider = StateProvider<int>((ref) => 1); // default: M
+final scheduleFontSizeIndexProvider = StateProvider<int>((ref) => 0); // default: S
 
 /// Provider for RokuyoCalculator
 final rokuyoCalculatorProvider = Provider<RokuyoCalculator>((ref) {
@@ -39,6 +44,8 @@ final monthCalendarProvider =
   // Watch providers to rebuild when data changes
   ref.watch(scheduleProvider);
   ref.watch(anniversaryProvider);
+  ref.watch(workEntryProvider);
+  ref.watch(workScheduleConfigsProvider);
 
   for (int day = 1; day <= daysInMonth; day++) {
     final date = DateTime(month.year, month.month, day);
@@ -53,6 +60,8 @@ final monthCalendarProvider =
         return 0;
       });
     final anniversaries = anniversaryNotifier.getAnniversariesForDate(date);
+    final workType = ref.read(resolvedWorkTypeProvider(date));
+    final startTime = ref.read(resolvedWorkStartTimeProvider(date));
     days.add(CalendarDay(
       date: date,
       rokuyo: rokuyoCalc.calculate(date),
@@ -60,6 +69,9 @@ final monthCalendarProvider =
       events: events,
       anniversaries: anniversaries,
       holiday: HolidayCalculator.getHoliday(date),
+      workType: workType,
+      workStartHour: startTime?.hour,
+      workStartMinute: startTime?.minute,
     ));
   }
 
