@@ -46,6 +46,7 @@ final monthCalendarProvider =
   ref.watch(anniversaryProvider);
   ref.watch(workEntryProvider);
   ref.watch(workScheduleConfigsProvider);
+  ref.watch(excludedWorkDatesProvider);
 
   for (int day = 1; day <= daysInMonth; day++) {
     final date = DateTime(month.year, month.month, day);

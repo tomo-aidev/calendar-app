@@ -1,7 +1,7 @@
 name: lucky_calendar
 description: "吉日カレンダー - 六曜・吉日・祝日表示付きカレンダーアプリ"
 publish_to: 'none'
-version: 1.0.1+3
+version: 1.0.2+4
 
 environment:
   sdk: ^3.10.8
